@@ -1,6 +1,8 @@
 package org.test.voice;
 
 import com.nexmo.client.NexmoClient;
+import com.nexmo.client.insight.AdvancedInsightResponse;
+import com.nexmo.client.insight.RoamingDetails;
 import com.nexmo.client.sms.SmsSubmissionResponse;
 import com.nexmo.client.sms.SmsSubmissionResponseMessage;
 import com.nexmo.client.sms.messages.TextMessage;
@@ -100,5 +102,43 @@ public class TestVonageAPI {
         // Status 19: Verification request  ['9f88b52274de4c4fb14345450612ee4d'] can't be cancelled now.
         // Too many attempts to re-deliver have already been made.
         System.out.println("Verification cancelled.");
+    }
+
+    @Ignore
+    @Test
+    public void testNumberInsight() {
+        NexmoClient client = new NexmoClient.Builder() // "new" was missing
+                .apiKey("find your own key")
+                .apiSecret("find your own secret")
+                .build();
+
+        AdvancedInsightResponse response = client.getInsightClient()
+                .getAdvancedNumberInsight("find your own phone");
+
+        System.out.println("BASIC INFO:");
+        System.out.println("International format: " + response.getInternationalFormatNumber());
+        System.out.println("National format: " + response.getNationalFormatNumber());
+        System.out.println("Country: " + response.getCountryName() + " (" + response.getCountryCodeIso3() + ", +"+ response.getCountryPrefix() + ")");
+        System.out.println();
+        System.out.println("STANDARD INFO:");
+        System.out.println("Current carrier: " + response.getCurrentCarrier().getName());
+        System.out.println("Original carrier: " + response.getOriginalCarrier().getName());
+
+        System.out.println();
+        System.out.println("ADVANCED INFO:");
+        System.out.println("Validity: " + response.getValidNumber());
+        System.out.println("Reachability: " + response.getReachability());
+        System.out.println("Ported status: " + response.getPorted());
+
+        RoamingDetails roaming = response.getRoaming();
+        if (roaming == null) {
+            System.out.println("- No Roaming Info -");
+        } else {
+            System.out.println("Roaming status: " + roaming.getStatus());
+            if (response.getRoaming().getStatus() == RoamingDetails.RoamingStatus.ROAMING) {
+                System.out.print("    Currently roaming in: " + roaming.getRoamingCountryCode());
+                System.out.println(" on the network " + roaming.getRoamingNetworkName());
+            }
+        }
     }
 }
